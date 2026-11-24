@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
 import { Band, ButtonLink, Col, Intro, TwoCol } from '@/components/ui';
 import { LINKS } from '@/content/links';
+import { getLinks } from '@/lib/cms';
 
 export const metadata: Metadata = { title: 'ML Systems Study Group' };
 
-export default function MLSystemsPage() {
+export default async function MLSystemsPage() {
+  const links = await getLinks();
   return (
     <>
       <Intro
@@ -13,7 +15,7 @@ export default function MLSystemsPage() {
       >
         <div className="btn-row">
           <ButtonLink href={LINKS.mlSystemsCurriculum}>Read the curriculum</ButtonLink>
-          <ButtonLink href={LINKS.calendar} variant="outline">
+          <ButtonLink href={links.calendar} variant="outline">
             Add the calendar
           </ButtonLink>
         </div>

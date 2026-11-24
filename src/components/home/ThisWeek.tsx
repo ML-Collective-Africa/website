@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useEffect, useId, useState } from 'react';
-import { LINKS } from '@/content/links';
 import type { Session } from '@/content/site';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -39,7 +38,7 @@ function shift(day: number, hour: number, offset: number) {
   return { day: DAYS[d], time: `${h12}${m ? `:${String(m).padStart(2, '0')}` : ''}${h < 12 ? 'am' : 'pm'}` };
 }
 
-export function ThisWeek({ sessions, compact }: { sessions: Session[]; compact?: boolean }) {
+export function ThisWeek({ sessions, calendar, compact }: { sessions: Session[]; calendar: string; compact?: boolean }) {
   const id = useId();
   const [zone, setZone] = useState<Zone>('wat');
   const [local, setLocal] = useState({ offset: 1, place: 'your time zone' });
@@ -103,7 +102,7 @@ export function ThisWeek({ sessions, compact }: { sessions: Session[]; compact?:
         })}
       </ol>
       <div className="week__foot">
-        <a href={LINKS.calendar}>
+        <a href={calendar}>
           Add the MLC calendar<span className="sr-only"> (opens external site)</span>
         </a>
         <Link href="/programmes">How each session works</Link>

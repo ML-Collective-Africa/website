@@ -2,10 +2,12 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Band, ButtonLink, Col, Intro, TwoCol } from '@/components/ui';
 import { LINKS } from '@/content/links';
+import { getLinks } from '@/lib/cms';
 
 export const metadata: Metadata = { title: 'Focus Groups' };
 
-export default function FocusGroupsPage() {
+export default async function FocusGroupsPage() {
+  const links = await getLinks();
   return (
     <>
       <Intro
@@ -154,7 +156,7 @@ export default function FocusGroupsPage() {
           </Col>
           <Col>
             <div className="btn-row">
-              <ButtonLink href={LINKS.sundaySlotForm}>Request a slot</ButtonLink>
+              <ButtonLink href={links.sundaySlotForm}>Request a slot</ButtonLink>
             </div>
             <p className="note">Questions about focus groups? Ask the moderators in the #focus-groups channel on Discord.</p>
           </Col>

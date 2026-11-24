@@ -109,3 +109,13 @@ export function isHttpUrl(s: string | undefined): s is string {
     return false;
   }
 }
+
+/** "Sun 16 Nov, 8pm WAT" from an ISO time. WAT is UTC+1 all year. */
+export function watLabel(iso: string, withYear = false): string {
+  const d = new Date(new Date(iso).getTime() + 3600e3);
+  const h = d.getUTCHours();
+  const m = d.getUTCMinutes();
+  const time = `${h % 12 === 0 ? 12 : h % 12}${m ? `:${String(m).padStart(2, '0')}` : ''}${h < 12 ? 'am' : 'pm'}`;
+  const day = `${DAYS[d.getUTCDay()]} ${d.getUTCDate()} ${SHORT_MONTHS[d.getUTCMonth()]}${withYear ? ` ${d.getUTCFullYear()}` : ''}`;
+  return `${day}, ${time} WAT`;
+}

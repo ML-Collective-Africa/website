@@ -2,10 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLink, Band, Col, Intro, TextLink, TwoCol } from '@/components/ui';
 import { LINKS } from '@/content/links';
-import { getReading } from '@/lib/content';
+import { getReading } from '@/lib/cms';
 
 export const metadata: Metadata = { title: 'Saturday Reading Groups' };
-export const dynamic = 'force-dynamic';
 
 export default async function ReadingGroupsPage() {
   const { current, past } = await getReading();

@@ -19,7 +19,7 @@ export function GradRoll({ people }: { people: GradStudent[] }) {
     return people.filter(
       (p) =>
         (year === ALL || p.year === year) &&
-        (!s || p.name.toLowerCase().includes(s) || p.school.toLowerCase().includes(s) || p.course.toLowerCase().includes(s)),
+        (!s || p.name.toLowerCase().includes(s) || p.school.toLowerCase().includes(s) || p.degree.toLowerCase().includes(s) || p.course.toLowerCase().includes(s)),
     );
   }, [people, year, q]);
   const { items, pages, current } = paginate(list, page, 10);

@@ -3,14 +3,13 @@ import Link from 'next/link';
 import { NotesIcon } from '@/components/icons';
 import { Pager } from '@/components/Pager';
 import { Intro } from '@/components/ui';
-import { LINKS } from '@/content/links';
-import { getShowcase } from '@/lib/content';
+import { getShowcase, getLinks } from '@/lib/cms';
 import { dayLabel, pageParam, paginate } from '@/lib/utils';
 
 export const metadata: Metadata = { title: 'Research showcase' };
-export const dynamic = 'force-dynamic';
 
 export default async function ShowcasePage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+  const links = await getLinks();
   const { page } = await searchParams;
   const { items, pages, current } = paginate(await getShowcase(), pageParam(page), 3);
   return (
@@ -20,7 +19,7 @@ export default async function ShowcasePage({ searchParams }: { searchParams: Pro
         lead={
           <>
             Every Sunday, selected members present their work. Check out what they talked about. Recordings and notes are
-            on the <a href={LINKS.calendar}>MLC calendar</a>.
+            on the <a href={links.calendar}>MLC calendar</a>.
           </>
         }
       >

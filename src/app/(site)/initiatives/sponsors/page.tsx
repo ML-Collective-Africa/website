@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import { Band, ButtonLink, Col, Intro, TwoCol } from '@/components/ui';
-import { LINKS } from '@/content/links';
+import { getLinks } from '@/lib/cms';
 import { SPONSORS } from '@/content/site';
 
 export const metadata: Metadata = { title: 'Sponsors' };
 
-export default function SponsorsPage() {
+export default async function SponsorsPage() {
+  const links = await getLinks();
   return (
     <>
       <Intro title="Sponsors" lead="The organisations that have backed our work. Thank you." />
@@ -47,7 +48,7 @@ export default function SponsorsPage() {
               <li>Speak at a Sunday Special</li>
             </ul>
             <div className="btn-row">
-              <ButtonLink href={`mailto:${LINKS.email}`}>Email us</ButtonLink>
+              <ButtonLink href={`mailto:${links.email}`}>Email us</ButtonLink>
             </div>
           </Col>
         </TwoCol>

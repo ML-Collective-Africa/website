@@ -1,4 +1,4 @@
-import real from './realdata.json';
+import real from './realdata';
 import type {
   Collections,
   FocusGroup,
@@ -211,7 +211,7 @@ function seedShowcase(): ShowcaseSession[] {
   return [
     {
       id: 's1',
-      date: '2026-10-26',
+      date: '2026-10-25',
       talks: [
         { speaker: 'Speech focus group', title: 'Code switched speech recognition for Hausa and English', summary: 'We recorded 40 hours of people switching between Hausa and English mid sentence and tested five speech models on it. All of them struggled most at the switch points.' },
         { speaker: 'Kwame Mensah', title: 'Running small language models on a $60 phone', summary: 'How far you can prune and quantise a small language model before it stops being useful, measured on a cheap Android phone.' },
@@ -219,7 +219,7 @@ function seedShowcase(): ShowcaseSession[] {
     },
     {
       id: 's2',
-      date: '2026-10-19',
+      date: '2026-10-18',
       talks: [
         { speaker: 'Wanjiru Kamau', title: 'Reading papers when you’re new to the field', summary: 'A practical walkthrough of how she reads a paper in three passes, and how to keep notes you’ll actually reuse.' },
         { speaker: 'Medical imaging focus group', title: 'Few labels, many scans', summary: 'Early results on few shot classification of chest X-rays using frozen encoders, and what went wrong with the first split.' },
@@ -228,7 +228,7 @@ function seedShowcase(): ShowcaseSession[] {
     },
     {
       id: 's3',
-      date: '2026-10-12',
+      date: '2026-10-11',
       talks: [
         { speaker: 'Yorùbá translation focus group', title: 'Augmenting data for low resource translation', summary: 'Comparing back translation and simple word swaps for English to Yorùbá translation with under 10,000 sentence pairs.' },
       ],

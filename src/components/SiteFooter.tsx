@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { LINKS } from '@/content/links';
+import { getLinks } from '@/lib/cms';
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const LINKS = await getLinks();
   return (
     <footer className="site-footer">
       <div className="wrap site-footer__desk">

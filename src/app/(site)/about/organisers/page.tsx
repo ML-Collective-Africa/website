@@ -2,13 +2,12 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { PeopleGrid } from '@/components/PeopleGrid';
 import { Band, Col, Intro, TwoCol } from '@/components/ui';
-import { LINKS } from '@/content/links';
-import { getPeople } from '@/lib/content';
+import { getPeople, getLinks } from '@/lib/cms';
 
 export const metadata: Metadata = { title: 'Organisers' };
-export const dynamic = 'force-dynamic';
 
 export default async function OrganisersPage() {
+  const links = await getLinks();
   const [organisers, advisors] = await Promise.all([getPeople('organiser'), getPeople('advisor')]);
   return (
     <>
@@ -38,7 +37,7 @@ export default async function OrganisersPage() {
               Discord and tell us what you’d like to help with.
             </p>
             <div className="btn-row">
-              <a href={LINKS.discord} className="btn btn--outline">
+              <a href={links.discord} className="btn btn--outline">
                 Join the Discord
               </a>
               <Link href="/about/torchbearers" className="text-link">

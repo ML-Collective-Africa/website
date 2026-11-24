@@ -2,20 +2,22 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Band, ButtonLink, Col, Intro, TwoCol } from '@/components/ui';
 import { LINKS } from '@/content/links';
+import { getLinks } from '@/lib/cms';
 
 export const metadata: Metadata = { title: 'Mentorship' };
 
-export default function MentorshipPage() {
+export default async function MentorshipPage() {
+  const links = await getLinks();
   return (
     <>
       <Intro
         title="Mentorship"
         lead="Once you have a workshop paper accepted, we can pair you with a PhD student, postdoc or researcher who can help you think through what comes next."
       >
-        {(LINKS.menteeApply || LINKS.mentorApply) && (
+        {(links.menteeApply || links.mentorApply) && (
           <div className="btn-row">
-            <ButtonLink href={LINKS.menteeApply}>Apply as a mentee</ButtonLink>
-            <ButtonLink href={LINKS.mentorApply} variant="outline">
+            <ButtonLink href={links.menteeApply}>Apply as a mentee</ButtonLink>
+            <ButtonLink href={links.mentorApply} variant="outline">
               Become a mentor
             </ButtonLink>
           </div>

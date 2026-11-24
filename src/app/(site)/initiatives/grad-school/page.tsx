@@ -3,11 +3,12 @@ import Link from 'next/link';
 import { GradRoll } from '@/components/GradRoll';
 import { Band, Col, Intro, TextLink, TwoCol } from '@/components/ui';
 import { LINKS } from '@/content/links';
-import { GRADS } from '@/content/site';
+import { getGrads } from '@/lib/cms';
 
 export const metadata: Metadata = { title: 'Grad school support' };
 
-export default function GradSchoolPage() {
+export default async function GradSchoolPage() {
+  const grads = await getGrads();
   return (
     <>
       <Intro
@@ -65,7 +66,7 @@ export default function GradSchoolPage() {
           </Col>
         </TwoCol>
       </Band>
-      <GradRoll people={GRADS} />
+      <GradRoll people={grads} />
     </>
   );
 }

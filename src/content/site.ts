@@ -1,4 +1,4 @@
-import real from './realdata.json';
+import real from './realdata';
 import { LINKS } from './links';
 
 /* Content that changes rarely and has no admin screen yet.

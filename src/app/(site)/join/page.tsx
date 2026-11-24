@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import { FaqColours } from '@/components/FaqColours';
-import { LINKS } from '@/content/links';
+import { getLinks } from '@/lib/cms';
 import { FAQ, JOIN_STEPS } from '@/content/site';
 
 export const metadata: Metadata = { title: 'Join' };
 
-export default function JoinPage() {
+export default async function JoinPage() {
+  const links = await getLinks();
   return (
     <main id="content">
       <section className="wrap intro" style={{ paddingBottom: 40, gap: 14 }}>
@@ -21,7 +22,7 @@ export default function JoinPage() {
           Steps to join
         </h2>
         <ol className="join-steps">
-          {JOIN_STEPS.map((s) => (
+          {JOIN_STEPS.map((step, i) => ({ ...step, href: [links.discord, links.mailingList, links.calendar][i] ?? step.href })).map((s) => (
             <li key={s.title}>
               <h3>{s.title}</h3>
               <p>{s.body}</p>
@@ -41,8 +42,8 @@ export default function JoinPage() {
             </h2>
             <p style={{ margin: 0, fontSize: 15, color: 'var(--text-2)', lineHeight: 1.5 }}>
               For anything else, email{' '}
-              <a href={`mailto:${LINKS.email}`} style={{ fontWeight: 600, color: 'var(--ink)' }}>
-                {LINKS.email}
+              <a href={`mailto:${links.email}`} style={{ fontWeight: 600, color: 'var(--ink)' }}>
+                {links.email}
               </a>{' '}
               or ask in the Discord.
             </p>

@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
 import { Pager } from '@/components/Pager';
 import { ArrowLink } from '@/components/ui';
-import { getReading } from '@/lib/content';
+import { getReading } from '@/lib/cms';
 import { pageParam, paginate } from '@/lib/utils';
 
 export const metadata: Metadata = { title: 'Reading Groups, past themes' };
-export const dynamic = 'force-dynamic';
 
 export default async function PastThemesPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const { page } = await searchParams;

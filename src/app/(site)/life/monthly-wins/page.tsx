@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { WithTitles } from '@/components/ui';
-import { getPublishedWinMonths, WIN_GROUPS } from '@/lib/content';
+import { getPublishedWinMonths } from '@/lib/cms';
+import { WIN_GROUPS } from '@/lib/wins';
 
 export const metadata: Metadata = { title: 'Monthly wins' };
-export const dynamic = 'force-dynamic';
 
 export default async function MonthlyWinsPage({ searchParams }: { searchParams: Promise<{ month?: string }> }) {
   const { month } = await searchParams;
@@ -16,7 +16,7 @@ export default async function MonthlyWinsPage({ searchParams }: { searchParams: 
     return acc;
   }, {});
   const groups = sel
-    ? WIN_GROUPS.map((g) => ({ title: g.title, items: sel.wins.filter((w) => g.kinds.includes(w.kind)) })).filter((g) => g.items.length)
+    ? WIN_GROUPS.map((g) => ({ title: g.title, items: sel.wins.filter((w) => (g.kinds as readonly string[]).includes(w.kind)) })).filter((g) => g.items.length)
     : [];
 
   return (

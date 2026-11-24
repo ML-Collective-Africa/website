@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Band, Intro } from '@/components/ui';
-import { LINKS } from '@/content/links';
-import { INTERNS, INTERNSHIP_PANELS } from '@/content/site';
+import { getInterns, getLinks } from '@/lib/cms';
+import { INTERNSHIP_PANELS } from '@/content/site';
 
 export const metadata: Metadata = { title: 'Internships' };
 
-export default function InternshipsPage() {
+export default async function InternshipsPage() {
+  const [links, interns] = await Promise.all([getLinks(), getInterns()]);
   const panels = INTERNSHIP_PANELS.filter((p) => p.href);
   return (
     <>
@@ -18,7 +19,7 @@ export default function InternshipsPage() {
         <h2 className="h2">Open opportunities</h2>
         <div className="doc-embed">
           <div className="doc-embed__bar">
-            <a href={LINKS.opportunitiesDoc} className="text-link" style={{ fontSize: 14 }}>
+            <a href={links.opportunitiesDoc} className="text-link" style={{ fontSize: 14 }}>
               Open in Google Docs
             </a>
           </div>
@@ -27,7 +28,7 @@ export default function InternshipsPage() {
               <strong>The live Google Doc shows here</strong>
               <span>If it doesn’t load, use Open in Google Docs above.</span>
             </div>
-            <iframe title="Research internship opportunities" src={LINKS.opportunitiesEmbed} loading="lazy" />
+            <iframe title="Research internship opportunities" src={links.opportunitiesEmbed} loading="lazy" />
           </div>
         </div>
         <p className="note">Seen an internship that isn’t here? Add it to the doc so everyone can find it.</p>
@@ -41,7 +42,7 @@ export default function InternshipsPage() {
               <Link href="/programmes/fellowships">their own page</Link>.
             </p>
           </div>
-          {INTERNS.map((y) => (
+          {interns.map((y) => (
             <div key={y.year} className="year-group">
               <h3 className="year-group__year">{y.year}</h3>
               <ul className="tile-list">

@@ -2,19 +2,31 @@
   "name": "mlc-africa-website",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "payload migrate --use-swc && payload run src/payload/seed-run.ts --use-swc && next build",
     "start": "next start",
-    "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "payload": "payload --use-swc",
+    "generate:types": "payload generate:types --use-swc",
+    "generate:importmap": "payload generate:importmap --use-swc"
   },
   "dependencies": {
-    "next": "15.5.29",
+    "@payloadcms/db-postgres": "3.94.2",
+    "@payloadcms/next": "3.94.2",
+    "@payloadcms/plugin-import-export": "3.94.2",
+    "@payloadcms/storage-vercel-blob": "3.94.2",
+    "@payloadcms/ui": "3.94.2",
+    "graphql": "16.11.0",
+    "next": "16.4.6",
+    "payload": "3.94.2",
     "react": "19.1.10",
-    "react-dom": "19.1.10"
+    "react-dom": "19.1.10",
+    "sharp": "0.35.5"
   },
   "devDependencies": {
+    "@swc-node/register": "1.12.1",
     "@types/node": "22.18.1",
     "@types/react": "19.1.12",
     "@types/react-dom": "19.1.9",

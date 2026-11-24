@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import flat from '@/data/flat-map.json';
 import land from '@/data/globe-land.json';
-import { FLAT_PINS, type Place } from '@/content/site';
+import type { Place } from '@/content/site';
 import { ChevronLeft, ChevronRight, CloseIcon } from '@/components/icons';
 
 const FILTERS: [label: string, type: string | null][] = [
@@ -14,6 +14,12 @@ const FILTERS: [label: string, type: string | null][] = [
 ];
 
 const LAND = land as number[];
+
+/* Where a place sits on the flat phone map, as percentages. Fitted to the dot map
+   artwork, so places editors add land in the right spot too. */
+function flatPin(lon: number, lat: number): [number, number] {
+  return [0.3457 * lon + 44.48, -0.8436 * lat + 59.96];
+}
 const R = 236;
 const C = 250;
 const D = Math.PI / 180;
@@ -270,8 +276,7 @@ export function MembersMap({ places }: { places: Place[] }) {
             <div className="flatmap">
               <FlatDots />
               {visible.map((p) => {
-                const pos = FLAT_PINS[p.id];
-                if (!pos) return null;
+                const pos = flatPin(p.lon, p.lat);
                 const on = p.id === selected;
                 const size = 8 + p.shown.length * 2;
                 return (

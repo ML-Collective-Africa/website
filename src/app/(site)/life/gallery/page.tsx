@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
 import { Pager } from '@/components/Pager';
 import { Intro, PlaceholderMedia } from '@/components/ui';
-import { getGallery } from '@/lib/content';
+import { getGallery } from '@/lib/cms';
 import { pageParam, paginate } from '@/lib/utils';
 
 export const metadata: Metadata = { title: 'Gallery' };
-export const dynamic = 'force-dynamic';
 
 function youtubeId(url: string) {
   return url.match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([\w-]{11})/)?.[1];

@@ -10,3 +10,8 @@ next-env.d.ts
 
 # Design handoff (kept locally, not part of the site)
 designs/
+
+# Local uploads in development (production uses Vercel Blob)
+/media/
+/imports/
+/exports/

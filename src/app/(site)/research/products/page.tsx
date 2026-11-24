@@ -2,11 +2,10 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Pager } from '@/components/Pager';
 import { Band, Intro, PlaceholderMedia } from '@/components/ui';
-import { getProducts } from '@/lib/content';
+import { getProducts } from '@/lib/cms';
 import { pageParam, paginate } from '@/lib/utils';
 
 export const metadata: Metadata = { title: 'Product-driven research' };
-export const dynamic = 'force-dynamic';
 
 export default async function ProductsPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const { page } = await searchParams;

@@ -2,24 +2,28 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Band, Banner, ButtonLink, Col, Intro, TextLink, TwoCol } from '@/components/ui';
 import { LINKS } from '@/content/links';
-import { CS197_ASSIGNMENTS, CS197_NEXT_COHORT } from '@/content/site';
+import { CS197_ASSIGNMENTS } from '@/content/site';
+import { getCs197 } from '@/lib/cms';
 
 export const metadata: Metadata = { title: 'CS197 Study Group' };
 
-export default function CS197Page() {
+export default async function CS197Page() {
+  const cohort = await getCs197();
   return (
     <>
       <Intro
         title="CS197 Study Group"
         lead="If you’re new to research, you can start here. We go through Harvard’s AI Research Experiences course together, one assignment at a time, with people learning right alongside you."
       >
-        <div className="callout">
-          <div className="callout__text">
-            <span className="callout__title">{CS197_NEXT_COHORT.title}</span>
-            <span className="callout__sub">{CS197_NEXT_COHORT.sub}</span>
+        {cohort.show && cohort.title && (
+          <div className="callout">
+            <div className="callout__text">
+              <span className="callout__title">{cohort.title}</span>
+              {cohort.sub && <span className="callout__sub">{cohort.sub}</span>}
+            </div>
+            <ButtonLink href={cohort.href}>{cohort.cta}</ButtonLink>
           </div>
-          <ButtonLink href={CS197_NEXT_COHORT.href}>{CS197_NEXT_COHORT.cta}</ButtonLink>
-        </div>
+        )}
       </Intro>
 
       <Band white>

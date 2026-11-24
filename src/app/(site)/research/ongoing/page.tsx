@@ -1,13 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Band, Banner, Intro } from '@/components/ui';
-import { LINKS } from '@/content/links';
-import { getFocusGroups } from '@/lib/content';
+import { getFocusGroups, getLinks } from '@/lib/cms';
 
 export const metadata: Metadata = { title: 'Ongoing research' };
-export const dynamic = 'force-dynamic';
 
 export default async function OngoingPage() {
+  const links = await getLinks();
   const groups = await getFocusGroups();
   return (
     <>
@@ -19,7 +18,7 @@ export default async function OngoingPage() {
           <Link href="/programmes/focus-groups" className="btn btn--fill">
             Start or join a focus group
           </Link>
-          <a href={LINKS.focusGroupUpdateForm} className="btn btn--outline">
+          <a href={links.focusGroupUpdateForm} className="btn btn--outline">
             Update your group’s details
           </a>
         </div>

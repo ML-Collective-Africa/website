@@ -3,15 +3,16 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ExternalIcon } from '@/components/icons';
 import { paperHref } from '@/components/ResearchList';
-import { getPaper, getPublishedPapers } from '@/lib/content';
+import { getPaper, getPublishedPapers } from '@/lib/cms';
 
-export const dynamic = 'force-dynamic';
 
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const paper = await getPaper((await params).slug);
-  return { title: paper?.title ?? 'Paper not found', description: paper?.summary };
+  // Checking here, before the page starts streaming, gives missing papers a real 404.
+  if (!paper) notFound();
+  return { title: paper.title, description: paper.summary };
 }
 
 export default async function PaperPage({ params }: Props) {

@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
 import { PeopleGrid } from '@/components/PeopleGrid';
 import { Band, Banner, Intro } from '@/components/ui';
-import { getPeople } from '@/lib/content';
+import { getPeople } from '@/lib/cms';
 
 export const metadata: Metadata = { title: 'Torchbearers' };
-export const dynamic = 'force-dynamic';
 
 export default async function TorchbearersPage() {
   const people = await getPeople('torchbearer');

@@ -1,16 +1,17 @@
 import type { Metadata } from 'next';
 import { Band, ButtonLink, Col, Intro, TwoCol } from '@/components/ui';
-import { LINKS } from '@/content/links';
-import { SPECIAL_SESSIONS } from '@/content/site';
-import { dayLabel, shortDate } from '@/lib/utils';
+import { getAnnouncements, getLinks } from '@/lib/cms';
+import { shortDate, watLabel } from '@/lib/utils';
 
 export const metadata: Metadata = { title: 'Sunday Specials' };
-export const dynamic = 'force-dynamic';
 
-export default function SundaySpecialsPage() {
-  const today = new Date().toISOString().slice(0, 10);
-  const upcoming = [...SPECIAL_SESSIONS].reverse().find((s) => s.date >= today);
-  const earlier = SPECIAL_SESSIONS.filter((s) => s.date < today);
+export default async function SundaySpecialsPage() {
+  const links = await getLinks();
+  // Special sessions come from Announcements. A session counts as upcoming until the end of its day.
+  const sessions = (await getAnnouncements()).filter((a) => a.kind === 'special-session');
+  const cutoff = new Date(Date.now() - 6 * 3600e3).toISOString();
+  const upcoming = [...sessions].reverse().find((s) => s.startsAt >= cutoff);
+  const earlier = sessions.filter((s) => s.startsAt < cutoff);
 
   return (
     <>
@@ -19,7 +20,7 @@ export default function SundaySpecialsPage() {
         lead="Our weekly community call, every Sunday at 8pm WAT. Members present their work, then we catch up on community news."
       >
         <div className="btn-row">
-          <ButtonLink href={LINKS.calendar}>Add the MLC calendar to yours</ButtonLink>
+          <ButtonLink href={links.calendar}>Add the MLC calendar to yours</ButtonLink>
         </div>
       </Intro>
 
@@ -55,10 +56,10 @@ export default function SundaySpecialsPage() {
             <div className="col" style={{ gap: 20 }}>
               {upcoming && (
                 <div className="next-special">
-                  <span className="next-special__when">Next special session · {dayLabel(upcoming.date)}, 8pm WAT</span>
+                  <span className="next-special__when">Next special session · {watLabel(upcoming.startsAt)}</span>
                   <span className="next-special__title">{upcoming.title}</span>
-                  {upcoming.detail && <span className="next-special__detail">{upcoming.detail}</span>}
-                  <a href={LINKS.calendar} className="text-link" style={{ marginTop: 4 }}>
+                  {upcoming.details && <span className="next-special__detail">{upcoming.details}</span>}
+                  <a href={links.calendar} className="text-link" style={{ marginTop: 4 }}>
                     Add it to your calendar
                   </a>
                 </div>
@@ -68,8 +69,8 @@ export default function SundaySpecialsPage() {
                   <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-2)' }}>Earlier special sessions</span>
                   <ul className="plain-lines">
                     {earlier.map((s) => (
-                      <li key={s.date}>
-                        {s.title}, {shortDate(s.date)}
+                      <li key={s.id}>
+                        {s.title}, {shortDate(s.startsAt)}
                       </li>
                     ))}
                   </ul>
@@ -91,7 +92,7 @@ export default function SundaySpecialsPage() {
           </Col>
           <Col>
             <div className="btn-row">
-              <ButtonLink href={LINKS.sundaySlotForm}>Request a slot</ButtonLink>
+              <ButtonLink href={links.sundaySlotForm}>Request a slot</ButtonLink>
             </div>
           </Col>
         </TwoCol>
