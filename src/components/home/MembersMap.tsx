@@ -117,6 +117,83 @@ export function MembersMap({ places }: { places: Place[] }) {
 
   const pick = (id: string) => setSelected((cur) => (cur === id ? null : id));
 
+  /* Globe popups: pointing at a dot shows who's there and moving away hides it
+     (with a short pause so the pointer can move into the popup to scroll it).
+     Clicking a dot keeps it open until you click anywhere else or press Escape. */
+  const pinned = useRef(false);
+  const hideTimer = useRef<number | null>(null);
+  const globeCard = useRef<HTMLDivElement>(null);
+  const cancelHide = () => {
+    if (hideTimer.current) window.clearTimeout(hideTimer.current);
+    hideTimer.current = null;
+  };
+  const showOnHover = (id: string, e: PointerEvent<HTMLElement>) => {
+    if (e.pointerType !== 'mouse' || drag.current?.moved) return;
+    cancelHide();
+    if (pinned.current && selected !== id) pinned.current = false;
+    setSelected(id);
+  };
+  const hideAfterHover = (e: PointerEvent<HTMLElement>) => {
+    if (e.pointerType !== 'mouse' || pinned.current) return;
+    cancelHide();
+    hideTimer.current = window.setTimeout(() => setSelected(null), 200);
+  };
+  const clickPin = (id: string) => {
+    cancelHide();
+    if (selected === id && pinned.current) {
+      pinned.current = false;
+      setSelected(null);
+    } else {
+      pinned.current = true;
+      setSelected(id);
+    }
+  };
+  const closePop = () => {
+    cancelHide();
+    pinned.current = false;
+    setSelected(null);
+  };
+
+  // Click or tap anywhere outside the dots and the popup closes it.
+  useEffect(() => {
+    if (!selected) return;
+    const onOutside = (e: globalThis.PointerEvent) => {
+      const card = globeCard.current;
+      if (!card || !card.offsetParent) return; // globe hidden (phones use the flat map)
+      const t = e.target as Element | null;
+      if (t?.closest?.('.map-globe .pin, .map-pop')) return;
+      closePop();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && globeCard.current?.offsetParent) closePop();
+    };
+    document.addEventListener('pointerdown', onOutside);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onOutside);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [selected]);
+  useEffect(() => cancelHide, []);
+
+  /* Two-finger sideways swipe on a trackpad turns the globe. Up and down still
+     scroll the page, so the globe never traps someone who is scrolling past. */
+  const globeEl = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = globeEl.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+      e.preventDefault(); // also stops the browser's swipe-to-go-back
+      stopSpin();
+      const k = 180 / (el.getBoundingClientRect().width || 500);
+      // Same direction as dragging: the surface follows the fingers.
+      setRot((r) => ({ ...r, lon: r.lon - e.deltaX * k }));
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, []);
+
   const onDown = (e: PointerEvent<HTMLDivElement>) => {
     const t = e.target as HTMLElement;
     if (t.closest('.pin') || t.closest('[role=dialog]')) return;
@@ -157,8 +234,8 @@ export function MembersMap({ places }: { places: Place[] }) {
             </h2>
             <p className="home-block__sub">
               <span className="hide-mobile">
-                See our members on the map. Drag the globe and click a dot to see who went where for internships, grad
-                school and fellowships.
+                See our members on the map. Drag the globe and point at a dot to see who went where for internships,
+                grad school and fellowships.
               </span>
               <span className="show-mobile-inline">
                 See our members on the map. Tap a dot to see who went where for internships, grad school and
@@ -185,10 +262,11 @@ export function MembersMap({ places }: { places: Place[] }) {
         </div>
 
         {/* Desktop: globe */}
-        <div className="map-card map-globe">
+        <div className="map-card map-globe" ref={globeCard}>
           <div
+            ref={globeEl}
             className="globe"
-            style={{ cursor: grabbing ? 'grabbing' : 'grab' }}
+            style={{ cursor: grabbing ? 'grabbing' : 'grab', overscrollBehaviorX: 'contain' }}
             onPointerDown={onDown}
             onPointerMove={onMove}
             onPointerUp={onUp}
@@ -208,7 +286,9 @@ export function MembersMap({ places }: { places: Place[] }) {
                   className="pin"
                   aria-label={ariaFor(p)}
                   aria-pressed={on}
-                  onClick={() => pick(p.id)}
+                  onClick={() => clickPin(p.id)}
+                  onPointerEnter={(e) => showOnHover(p.id, e)}
+                  onPointerLeave={hideAfterHover}
                   style={{
                     left: `${left}%`,
                     top: `${top}%`,
@@ -226,6 +306,8 @@ export function MembersMap({ places }: { places: Place[] }) {
                 role="dialog"
                 aria-label={sel.city}
                 className="map-pop"
+                onPointerEnter={cancelHide}
+                onPointerLeave={hideAfterHover}
                 style={{
                   // Grow out of the corner nearest the pin.
                   transformOrigin: `${popPin.left > 50 ? 'right' : 'left'} ${popPin.top > 45 ? 'calc(100% - 20px)' : '20px'}`,
@@ -241,7 +323,7 @@ export function MembersMap({ places }: { places: Place[] }) {
                     <span className="map-place__country">{sel.country}</span>
                     <span className="map-place__city">{sel.city}</span>
                   </div>
-                  <button type="button" aria-label="Close" className="map-pop__close" onClick={() => setSelected(null)}>
+                  <button type="button" aria-label="Close" className="map-pop__close" onClick={closePop}>
                     <CloseIcon size={12} />
                   </button>
                 </div>
@@ -258,7 +340,7 @@ export function MembersMap({ places }: { places: Place[] }) {
             >
               <ChevronLeft />
             </button>
-            <span>Drag the globe to look around</span>
+            <span>Drag or swipe the globe to look around</span>
             <button
               type="button"
               className="round-btn"
