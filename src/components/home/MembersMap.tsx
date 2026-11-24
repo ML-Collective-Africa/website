@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import flat from '@/data/flat-map.json';
 import land from '@/data/globe-land.json';
 import { FLAT_PINS, type Place } from '@/content/site';
@@ -56,6 +56,35 @@ export function MembersMap({ places }: { places: Place[] }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [rot, setRot] = useState(START);
   const drag = useRef<{ x: number; y: number; lon: number; lat: number; moved: boolean; id: number } | null>(null);
+  const spin = useRef<{ frame: number; target: number } | null>(null);
+  const lonRef = useRef(rot.lon);
+  lonRef.current = rot.lon;
+
+  const stopSpin = () => {
+    if (spin.current) cancelAnimationFrame(spin.current.frame);
+    spin.current = null;
+  };
+  useEffect(() => stopSpin, []);
+
+  /** Turn the globe smoothly by `delta` degrees. Repeated clicks add up. */
+  const turn = (delta: number) => {
+    const target = (spin.current?.target ?? lonRef.current) + delta;
+    stopSpin();
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setRot((r) => ({ ...r, lon: target }));
+      return;
+    }
+    const from = lonRef.current;
+    const start = performance.now();
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / 400);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setRot((r) => ({ ...r, lon: from + (target - from) * eased }));
+      if (t < 1) spin.current = { frame: requestAnimationFrame(step), target };
+      else spin.current = null;
+    };
+    spin.current = { frame: requestAnimationFrame(step), target };
+  };
   const [grabbing, setGrabbing] = useState(false);
 
   const type = FILTERS.find((f) => f[0] === filter)![1];
@@ -85,7 +114,8 @@ export function MembersMap({ places }: { places: Place[] }) {
   const onDown = (e: PointerEvent<HTMLDivElement>) => {
     const t = e.target as HTMLElement;
     if (t.closest('.pin') || t.closest('[role=dialog]')) return;
-    drag.current = { x: e.clientX, y: e.clientY, lon: rot.lon, lat: rot.lat, moved: false, id: e.pointerId };
+    stopSpin();
+    drag.current = { x: e.clientX, y: e.clientY, lon: lonRef.current, lat: rot.lat, moved: false, id: e.pointerId };
   };
   const onMove = (e: PointerEvent<HTMLDivElement>) => {
     const g = drag.current;
@@ -186,10 +216,13 @@ export function MembersMap({ places }: { places: Place[] }) {
             })}
             {sel && popPin && (
               <div
+                key={sel.id}
                 role="dialog"
                 aria-label={sel.city}
                 className="map-pop"
                 style={{
+                  // Grow out of the corner nearest the pin.
+                  transformOrigin: `${popPin.left > 50 ? 'right' : 'left'} ${popPin.top > 45 ? 'calc(100% - 20px)' : '20px'}`,
                   left: `${popPin.left}%`,
                   top: `${popPin.top}%`,
                   transform: `${popPin.left > 50 ? 'translateX(calc(-100% - 18px))' : 'translateX(18px)'} ${
@@ -215,7 +248,7 @@ export function MembersMap({ places }: { places: Place[] }) {
               type="button"
               className="round-btn"
               aria-label="Turn the globe left"
-              onClick={() => setRot((r) => ({ ...r, lon: r.lon - 25 }))}
+              onClick={() => turn(-25)}
             >
               <ChevronLeft />
             </button>
@@ -224,7 +257,7 @@ export function MembersMap({ places }: { places: Place[] }) {
               type="button"
               className="round-btn"
               aria-label="Turn the globe right"
-              onClick={() => setRot((r) => ({ ...r, lon: r.lon + 25 }))}
+              onClick={() => turn(25)}
             >
               <ChevronRight />
             </button>

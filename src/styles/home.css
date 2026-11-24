@@ -594,3 +594,14 @@
     width: 100%;
   }
 }
+
+/* Popover grows in from the pin. Uses `scale` so it doesn't fight the inline transform that positions it. */
+.map-pop {
+  animation: map-pop-in 0.16s ease-out;
+}
+@keyframes map-pop-in {
+  from {
+    opacity: 0;
+    scale: 0.94;
+  }
+}

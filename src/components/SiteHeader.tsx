@@ -71,30 +71,33 @@ export function SiteHeader() {
         </button>
       </div>
 
-      {open && (
-        <nav id="mobile-menu" aria-label="Main" className="mobile-menu">
-          {NAV.map((s) => (
-            <div className="mobile-menu__group" key={s.key}>
-              <Link href={s.href} className="mobile-menu__top">
-                {s.label}
-              </Link>
-              {s.items.map((i) => (
-                <Link
-                  key={i.href}
-                  href={i.href}
-                  className="mobile-menu__sub"
-                  aria-current={pathname === i.href ? 'page' : undefined}
-                >
-                  {i.label}
+      {/* Always rendered so it can slide closed as well as open. Closed, it's inert. */}
+      <div className="mobile-menu-wrap" data-open={open} inert={!open}>
+        <div>
+          <nav id="mobile-menu" aria-label="Main" className="mobile-menu">
+            {NAV.map((s) => (
+              <div className="mobile-menu__group" key={s.key}>
+                <Link href={s.href} className="mobile-menu__top">
+                  {s.label}
                 </Link>
-              ))}
-            </div>
-          ))}
-          <Link href="/join" className="mobile-menu__join">
-            Join the community
-          </Link>
-        </nav>
-      )}
+                {s.items.map((i) => (
+                  <Link
+                    key={i.href}
+                    href={i.href}
+                    className="mobile-menu__sub"
+                    aria-current={pathname === i.href ? 'page' : undefined}
+                  >
+                    {i.label}
+                  </Link>
+                ))}
+              </div>
+            ))}
+            <Link href="/join" className="mobile-menu__join">
+              Join the community
+            </Link>
+          </nav>
+        </div>
+      </div>
     </header>
   );
 }
