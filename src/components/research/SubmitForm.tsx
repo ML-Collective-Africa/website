@@ -81,13 +81,19 @@ export function SubmitForm({ initialType }: { initialType: 'Paper' | 'Product' }
           {state.errors.length > 0 && (
             <div role="alert" tabIndex={-1} ref={summaryRef} className="error-summary">
               <strong>
-                {state.errors.length === 1 ? 'One thing needs' : `${['Two', 'Three', 'Four', 'Five'][state.errors.length - 2] ?? state.errors.length} things need`} fixing before you submit
+                {state.errors.some((e) => e.field === 'form')
+                  ? 'We couldn’t send this'
+                  : `${state.errors.length === 1 ? 'One thing needs' : `${['Two', 'Three', 'Four', 'Five'][state.errors.length - 2] ?? state.errors.length} things need`} fixing before you submit`}
               </strong>
-              {state.errors.map((e) => (
-                <a key={e.field} href={`#f-${e.field}`}>
-                  {e.message}
-                </a>
-              ))}
+              {state.errors.map((e) =>
+                e.field === 'form' ? (
+                  <span key={e.field}>{e.message}</span>
+                ) : (
+                  <a key={e.field} href={`#f-${e.field}`}>
+                    {e.message}
+                  </a>
+                ),
+              )}
             </div>
           )}
 

@@ -7,10 +7,30 @@ import { newId } from './utils';
 /* A small JSON file store, one file per collection, kept in DATA_DIR.
    It is enough for a volunteer-run site on a single server. To run on serverless
    hosting, swap these functions for a database or Payload CMS; pages only use
-   readCollection, mutate and logActivity. */
+   readCollection, mutate and logActivity.
+
+   On a read-only filesystem (for example Vercel) the store still reads: it serves
+   the built-in seed content from memory. Saving throws ReadOnlyStoreError. */
 
 const DATA_DIR = path.resolve(process.env.DATA_DIR || '.data');
 const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
+
+const READ_ONLY_CODES = new Set(['EROFS', 'EACCES', 'EPERM']);
+
+export class ReadOnlyStoreError extends Error {
+  constructor() {
+    super('Saving isn’t set up on this server yet. The site needs a database before changes can be saved.');
+    this.name = 'ReadOnlyStoreError';
+  }
+}
+
+function isReadOnly(err: unknown) {
+  return READ_ONLY_CODES.has((err as NodeJS.ErrnoException)?.code ?? '');
+}
+
+export function isReadOnlyStoreError(err: unknown): err is ReadOnlyStoreError {
+  return err instanceof ReadOnlyStoreError;
+}
 
 const queues = new Map<CollectionName, Promise<unknown>>();
 const seeding = new Map<CollectionName, Promise<unknown>>();
@@ -36,7 +56,14 @@ export async function readCollection<K extends CollectionName>(name: K): Promise
     let pending = seeding.get(name) as Promise<Collections[K]> | undefined;
     if (!pending) {
       const initial = seed()[name];
-      pending = writeAtomic(fileFor(name), initial).then(() => initial);
+      // If the disk is read-only, serve the seed from memory instead.
+      pending = writeAtomic(fileFor(name), initial).then(
+        () => initial,
+        (e) => {
+          if (isReadOnly(e)) return initial;
+          throw e;
+        },
+      );
       seeding.set(name, pending);
       pending.finally(() => seeding.delete(name)).catch(() => undefined);
     }
@@ -56,7 +83,12 @@ export async function mutate<K extends CollectionName, R = void>(
       const before = await readCollection(name);
       const copy = structuredClone(before);
       const { next, result } = await fn(copy);
-      await writeAtomic(fileFor(name), next);
+      try {
+        await writeAtomic(fileFor(name), next);
+      } catch (e) {
+        if (isReadOnly(e)) throw new ReadOnlyStoreError();
+        throw e;
+      }
       return { before, result };
     });
   queues.set(name, run);
@@ -91,8 +123,13 @@ export async function saveUpload(file: File, maxBytes = MAX_UPLOAD_BYTES): Promi
   if (!ext) throw new Error('Only PNG or JPG images can be uploaded.');
   if (file.size > maxBytes) throw new Error(`Images must be ${Math.round(maxBytes / 1024 / 1024)} MB or smaller.`);
   const name = `${newId()}.${ext}`;
-  await fs.mkdir(UPLOAD_DIR, { recursive: true });
-  await fs.writeFile(path.join(UPLOAD_DIR, name), Buffer.from(await file.arrayBuffer()));
+  try {
+    await fs.mkdir(UPLOAD_DIR, { recursive: true });
+    await fs.writeFile(path.join(UPLOAD_DIR, name), Buffer.from(await file.arrayBuffer()));
+  } catch (e) {
+    if (isReadOnly(e)) throw new ReadOnlyStoreError();
+    throw e;
+  }
   return `/uploads/${name}`;
 }
 

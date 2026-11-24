@@ -1,14 +1,17 @@
 'use server';
 
-import { mutate, saveUpload } from '@/lib/store';
+import { LINKS } from '@/content/links';
+import { isReadOnlyStoreError, mutate, saveUpload } from '@/lib/store';
 import type { Submission } from '@/lib/types';
 import { isHttpUrl, newId } from '@/lib/utils';
 
 export type SubmitState = {
   ok: boolean;
-  errors: { field: 'title' | 'email' | 'figure' | 'links' | 'figureAlt'; message: string }[];
+  errors: { field: 'title' | 'email' | 'figure' | 'links' | 'figureAlt' | 'form'; message: string }[];
   values?: Record<string, string>;
 };
+
+const CANT_SAVE = `We can’t take submissions through the site right now. Please email the details to ${LINKS.email} instead.`;
 
 const str = (fd: FormData, k: string, max = 2000) => String(fd.get(k) ?? '').trim().slice(0, max);
 
@@ -48,6 +51,7 @@ export async function submitResearch(_prev: SubmitState, fd: FormData): Promise<
       const src = await saveUpload(file, 5 * 1024 * 1024);
       figure = { src, alt: figureAlt, filename: file.name };
     } catch (e) {
+      if (isReadOnlyStoreError(e)) return { ok: false, errors: [{ field: 'form', message: CANT_SAVE }], values };
       return { ok: false, errors: [{ field: 'figure', message: (e as Error).message }], values };
     }
   }
@@ -69,6 +73,11 @@ export async function submitResearch(_prev: SubmitState, fd: FormData): Promise<
     createdAt: new Date().toISOString(),
     status: 'waiting',
   };
-  await mutate('submissions', (list) => ({ next: [sub, ...list] }));
+  try {
+    await mutate('submissions', (list) => ({ next: [sub, ...list] }));
+  } catch (e) {
+    if (isReadOnlyStoreError(e)) return { ok: false, errors: [{ field: 'form', message: CANT_SAVE }], values };
+    throw e;
+  }
   return { ok: true, errors: [] };
 }

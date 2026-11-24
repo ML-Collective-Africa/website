@@ -7,7 +7,7 @@ import { requireAdmin, requireSuper, type CurrentAdmin } from '@/lib/auth';
 import { checkPassword, hashPassword, tempPassword } from '@/lib/auth/password';
 import { SESSION_COOKIE, signSession } from '@/lib/auth/session';
 import { WIN_KINDS } from '@/lib/content';
-import { logActivity, mutate, readCollection, saveUpload } from '@/lib/store';
+import { isReadOnlyStoreError, logActivity, mutate, readCollection, saveUpload } from '@/lib/store';
 import type {
   ActivityArea,
   Admin,
@@ -74,7 +74,14 @@ export async function signIn(_prev: FormState, fd: FormData): Promise<FormState>
         passwordHash: await hashPassword(envPassword),
         addedAt: new Date().toISOString(),
       };
-      await mutate('admins', (list) => ({ next: list.length ? list : [first] }));
+      try {
+        await mutate('admins', (list) => ({ next: list.length ? list : [first] }));
+      } catch (e) {
+        if (isReadOnlyStoreError(e)) {
+          return { error: 'This server can’t save data yet, so the first admin can’t be created. Connect a database first.', email };
+        }
+        throw e;
+      }
       admins = await readCollection('admins');
     }
   }
