@@ -1245,13 +1245,56 @@ img {
   min-height: 56px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   font-size: 17px;
   font-weight: 600;
   padding: 8px 0;
   cursor: pointer;
 }
+
+/* Plus on closed questions, minus on open ones. Two bars drawn in the text
+   colour; opening shrinks the vertical bar away. Replaces the browser's triangle. */
+.faq summary,
+.abstract summary {
+  list-style: none;
+}
+.faq summary::-webkit-details-marker,
+.abstract summary::-webkit-details-marker {
+  display: none;
+}
+.faq summary,
+.abstract summary {
+  /* The icon sits a few shades lighter than the question, and takes the hover colour. */
+  --faq-icon: #9a96a3;
+}
+.faq summary::after,
+.abstract summary::after {
+  content: '';
+  flex: none;
+  width: 14px;
+  height: 14px;
+  background:
+    linear-gradient(var(--faq-icon), var(--faq-icon)) center / 14px 2px no-repeat,
+    linear-gradient(var(--faq-icon), var(--faq-icon)) center / 2px 14px no-repeat;
+  transition: background-size 0.2s ease-out;
+}
+.faq details[open] > summary::after,
+.abstract[open] > summary::after {
+  background-size: 14px 2px, 2px 0;
+}
+/* Hover is a quiet shift to the deep tint shade, not the bright accent. */
+.faq summary {
+  transition: color 0.15s ease-out;
+}
+/* FAQ questions get a random section colour on hover (set by FaqColours). */
 .faq summary:hover {
-  color: var(--purple);
+  color: var(--faq-hover, var(--tint-fg));
+  --faq-icon: var(--faq-hover, var(--tint-fg));
+}
+.abstract summary:hover {
+  color: var(--tint-fg);
+  --faq-icon: var(--tint-fg);
 }
 .faq p {
   margin: 0 0 18px;

@@ -185,6 +185,8 @@
   min-height: 32px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 .abstract p {
   margin: 12px 0 0;
