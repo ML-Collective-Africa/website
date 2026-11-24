@@ -462,9 +462,21 @@ img {
   flex-direction: column;
   box-shadow: 0 8px 24px rgba(23, 22, 28, 0.12);
 }
+/* Open on hover, or when keyboard focus is inside. Focus left behind by a mouse
+   click doesn't count, so a clicked menu doesn't stay stuck open. */
 .dd:hover .dd-menu,
-.dd:focus-within .dd-menu {
+.dd:has(:focus-visible) .dd-menu {
   display: flex;
+}
+/* Browsers without :has() fall back to any focus inside, so keyboard users still get the menu. */
+@supports not selector(:has(*)) {
+  .dd:focus-within .dd-menu {
+    display: flex;
+  }
+}
+/* While the pointer is over the nav, only the menu under it is open. */
+.main-nav:hover .dd:not(:hover) .dd-menu {
+  display: none;
 }
 .dd-menu a {
   padding: 11px 18px;
