@@ -503,10 +503,31 @@ img {
   font-weight: 500;
   font-size: 15px;
 }
-/* Each dropdown picks up its own section's tint from [data-section] on .dd. */
+/* The highlight is one bar per dropdown that glides between items (see
+   SiteHeader). It picks up its section's tint from [data-section] on .dd. */
+.dd-glide {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--glide-h, 0);
+  transform: translateY(var(--glide-y, 0));
+  background: var(--tint);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), height 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.12s ease-out;
+}
+/* Shown only while the pointer or keyboard focus is in the menu, so it can't get stuck on. */
+.dd-menu[data-glide='on']:hover .dd-glide,
+.dd-menu[data-glide='on']:has(:focus-visible) .dd-glide {
+  opacity: 1;
+}
+.dd-menu a {
+  position: relative;
+}
 .dd-menu a:hover,
 .dd-menu a:focus-visible {
-  background: var(--tint);
   color: var(--ink);
 }
 .nav-join {

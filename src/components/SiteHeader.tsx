@@ -2,10 +2,34 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FocusEvent, type MouseEvent } from 'react';
 import { NAV } from '@/content/nav';
 import { ChevronDown, CloseIcon, MenuIcon } from './icons';
 import { Logo } from './Logo';
+
+/* One highlight bar per dropdown glides to the item under the pointer or
+   keyboard focus, instead of each item flashing its own background. */
+function glideTo(e: MouseEvent<HTMLDivElement> | FocusEvent<HTMLDivElement>) {
+  const item = (e.target as HTMLElement).closest('a');
+  const menu = e.currentTarget;
+  const bar = menu.querySelector<HTMLElement>('.dd-glide');
+  if (!item || !bar) return;
+  // If the bar isn't showing yet (menu just opened), place it without sliding.
+  const entering = menu.dataset.glide !== 'on' || Number(getComputedStyle(bar).opacity) < 0.5;
+  if (entering) bar.style.transition = 'opacity 0.12s ease-out';
+  menu.style.setProperty('--glide-y', `${item.offsetTop}px`);
+  menu.style.setProperty('--glide-h', `${item.offsetHeight}px`);
+  menu.dataset.glide = 'on';
+  // Appear in place on entry. Only slide between items once it's showing.
+  if (entering) requestAnimationFrame(() => (bar.style.transition = ''));
+}
+
+function glideOut(e: MouseEvent<HTMLDivElement> | FocusEvent<HTMLDivElement>) {
+  const menu = e.currentTarget;
+  const next = 'relatedTarget' in e ? (e.relatedTarget as Node | null) : null;
+  if (next && menu.contains(next)) return;
+  menu.dataset.glide = 'off';
+}
 
 function isIn(pathname: string, match: string) {
   return pathname === match || pathname.startsWith(`${match}/`);
@@ -44,7 +68,8 @@ export function SiteHeader() {
                 <Link className="navlink" href={s.href} aria-haspopup="true" aria-current={current ? 'page' : undefined}>
                   {s.label} <ChevronDown />
                 </Link>
-                <div className="dd-menu">
+                <div className="dd-menu" onMouseOver={glideTo} onFocus={glideTo} onMouseLeave={glideOut} onBlur={glideOut}>
+                  <span className="dd-glide" aria-hidden="true" />
                   {s.items.map((i) => (
                     <Link key={i.href} href={i.href}>
                       {i.label}
