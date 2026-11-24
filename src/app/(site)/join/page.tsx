@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { FaqColours } from '@/components/FaqColours';
 import { LINKS } from '@/content/links';
 import { FAQ, JOIN_STEPS } from '@/content/site';
 
@@ -46,14 +47,14 @@ export default function JoinPage() {
               or ask in the Discord.
             </p>
           </div>
-          <div className="faq">
+          <FaqColours className="faq">
             {FAQ.map((f) => (
               <details key={f.q}>
                 <summary>{f.q}</summary>
                 <p>{f.a}</p>
               </details>
             ))}
-          </div>
+          </FaqColours>
         </div>
       </section>
     </main>
