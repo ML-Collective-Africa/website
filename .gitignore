@@ -1,0 +1,12 @@
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+.env*.local
+.env
+# Local content store (admin edits, submissions, uploads)
+.data/
+
+# Design handoff (kept locally, not part of the site)
+designs/
