@@ -15,7 +15,12 @@ import { newId } from './utils';
 const DATA_DIR = path.resolve(process.env.DATA_DIR || '.data');
 const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
 
-const READ_ONLY_CODES = new Set(['EROFS', 'EACCES', 'EPERM']);
+// Vercel's disk is read-only, and creating a folder there fails with ENOENT.
+const READ_ONLY_CODES = new Set(['EROFS', 'EACCES', 'EPERM', 'ENOENT']);
+
+/* Skip the disk entirely where it can't be written: on Vercel (unless DATA_DIR
+   points somewhere writable), or when STORE_READ_ONLY=1. */
+const READ_ONLY_MODE = process.env.STORE_READ_ONLY === '1' || (Boolean(process.env.VERCEL) && !process.env.DATA_DIR);
 
 export class ReadOnlyStoreError extends Error {
   constructor() {
@@ -47,6 +52,7 @@ async function writeAtomic(file: string, data: unknown) {
 }
 
 export async function readCollection<K extends CollectionName>(name: K): Promise<Collections[K]> {
+  if (READ_ONLY_MODE) return seed()[name];
   try {
     const raw = await fs.readFile(fileFor(name), 'utf8');
     return JSON.parse(raw) as Collections[K];
@@ -80,6 +86,7 @@ export async function mutate<K extends CollectionName, R = void>(
   const run = prev
     .catch(() => undefined)
     .then(async () => {
+      if (READ_ONLY_MODE) throw new ReadOnlyStoreError();
       const before = await readCollection(name);
       const copy = structuredClone(before);
       const { next, result } = await fn(copy);
@@ -123,6 +130,7 @@ export async function saveUpload(file: File, maxBytes = MAX_UPLOAD_BYTES): Promi
   if (!ext) throw new Error('Only PNG or JPG images can be uploaded.');
   if (file.size > maxBytes) throw new Error(`Images must be ${Math.round(maxBytes / 1024 / 1024)} MB or smaller.`);
   const name = `${newId()}.${ext}`;
+  if (READ_ONLY_MODE) throw new ReadOnlyStoreError();
   try {
     await fs.mkdir(UPLOAD_DIR, { recursive: true });
     await fs.writeFile(path.join(UPLOAD_DIR, name), Buffer.from(await file.arrayBuffer()));
@@ -134,7 +142,7 @@ export async function saveUpload(file: File, maxBytes = MAX_UPLOAD_BYTES): Promi
 }
 
 export async function readUpload(name: string): Promise<{ data: Buffer; type: string } | null> {
-  if (!/^[a-z0-9]+\.(png|jpg)$/.test(name)) return null;
+  if (READ_ONLY_MODE || !/^[a-z0-9]+\.(png|jpg)$/.test(name)) return null;
   try {
     const data = await fs.readFile(path.join(UPLOAD_DIR, name));
     return { data, type: name.endsWith('.png') ? 'image/png' : 'image/jpeg' };
